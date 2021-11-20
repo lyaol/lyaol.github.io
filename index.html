@@ -11,7 +11,7 @@
 <meta property="og:title" content="liyoo">
 <meta property="og:url" content="http://example.com/index.html">
 <meta property="og:site_name" content="liyoo">
-<meta property="og:locale" content="zh_CN">
+<meta property="og:locale" content="en_US">
 <meta property="article:author" content="liyoo">
 <meta name="twitter:card" content="summary">
   
@@ -63,6 +63,39 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-c-ares C语言异步DNS解析库" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2021/11/01/c-ares%20C%E8%AF%AD%E8%A8%80%E5%BC%82%E6%AD%A5DNS%E8%A7%A3%E6%9E%90%E5%BA%93/" class="article-date">
+  <time datetime="2021-11-01T06:54:54.486Z" itemprop="datePublished">2021-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="c-ares-C语言异步DNS解析库"><a href="#c-ares-C语言异步DNS解析库" class="headerlink" title="c-ares C语言异步DNS解析库"></a>c-ares C语言异步DNS解析库</h4><p>​        在网络编程中，在需要进行直接访问域名的场景中，比如curl，根据数通知识可以知道，首先我们需要根据域名获取ip，而这个过程需要访问DNS服务器来完成的，也就是函数<code>gethostbyname</code>来完成。但是<code>gethostbyname</code>是同步的，当链路不通时会造成阻塞（无法设置超时时间)。所以异步DNS应运而生，官网地址:<a target="_blank" rel="noopener" href="https://c-ares.haxx.se/%E3%80%82">https://c-ares.haxx.se/。</a></p>
+<hr>
+<p>c-ares是一个C语言的异步DNS解析库，可以很方便的和使用者的事件循环统一起来，实现DNS的非阻塞异步解析，libcurl, libevent, gevent, nodejs都在使用。</p>
+<p>下面摘自Stack Overflow的一个例子。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netdb.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ares.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//ares  处理完成，返回DNS解析的信息</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dns_callback</span> <span class="params">(<span class="keyword">void</span>* arg, <span class="keyword">int</span> status, <span class="keyword">int</span> timeouts, struct hostent* host)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(status == ARES_SUCCESS)</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; host-&gt;h_name &lt;&lt; <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;lookup failed: &quot;</span> &lt;&lt; status &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main_loop</span><span class="params">(ares_channel &amp;channel)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> nfds, count;</span><br><span class="line">    fd_set readers, writers;</span><br><span class="line">    timeval tv, *tvp;</span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        FD_ZERO(&amp;readers);</span><br><span class="line">        FD_ZERO(&amp;writers);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//获取ares channel使用的FD</span></span><br><span class="line">        nfds = ares_fds(channel, &amp;readers, &amp;writers);   </span><br><span class="line">        <span class="keyword">if</span> (nfds == <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        tvp = ares_timeout(channel, <span class="literal">NULL</span>, &amp;tv);       </span><br><span class="line"></span><br><span class="line">        <span class="comment">//将ares的SOCKET FD 加入事件循环</span></span><br><span class="line">        count = select(nfds, &amp;readers, &amp;writers, <span class="literal">NULL</span>, tvp);   </span><br><span class="line"></span><br><span class="line">        <span class="comment">//有事件发生 交由ares 处理</span></span><br><span class="line">        ares_process(channel, &amp;readers, &amp;writers);  </span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">ip</span>;</span></span><br><span class="line">    <span class="keyword">int</span> res;</span><br><span class="line">    <span class="keyword">if</span>(argc &lt; <span class="number">2</span> ) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;usage: &quot;</span> &lt;&lt; argv[<span class="number">0</span>] &lt;&lt; <span class="string">&quot; ip.address\n&quot;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    inet_aton(argv[<span class="number">1</span>], &amp;ip);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//创建一个ares_channel </span></span><br><span class="line">    ares_channel channel;    </span><br><span class="line"></span><br><span class="line">    <span class="comment">//ares 对channel 进行初始化</span></span><br><span class="line">    <span class="keyword">if</span>((res = ares_init(&amp;channel)) != ARES_SUCCESS) &#123;    </span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;ares feiled: &quot;</span> &lt;&lt; res &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//传递给c-ares channal 和 回调</span></span><br><span class="line">    ares_gethostbyaddr(channel, &amp;ip, <span class="keyword">sizeof</span> ip, AF_INET, dns_callback, <span class="literal">NULL</span>); </span><br><span class="line"></span><br><span class="line">    <span class="comment">//主程序事件循环 </span></span><br><span class="line">    main_loop(channel);   </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果有需要可以采用c-ares实现一个自己的DNS异步解析的Server，做成独立的dns解析服务</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/11/01/c-ares%20C%E8%AF%AD%E8%A8%80%E5%BC%82%E6%AD%A5DNS%E8%A7%A3%E6%9E%90%E5%BA%93/" data-id="ckw7mskrx0000zsulh3ii18oh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-电子合同模板生成步骤" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -254,7 +287,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">November 2021</a></li></ul>
     </div>
   </div>
 
@@ -265,6 +298,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/11/01/c-ares%20C%E8%AF%AD%E8%A8%80%E5%BC%82%E6%AD%A5DNS%E8%A7%A3%E6%9E%90%E5%BA%93/">(no title)</a>
+          </li>
         
           <li>
             <a href="/2021/11/01/%E7%94%B5%E5%AD%90%E5%90%88%E5%90%8C%E6%A8%A1%E6%9D%BF%E7%94%9F%E6%88%90%E6%AD%A5%E9%AA%A4/">电子合同模板生成</a>
